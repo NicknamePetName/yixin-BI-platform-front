@@ -18,9 +18,10 @@ import {
 import { Helmet, history, useModel } from '@umijs/max';
 import { Alert, Tabs, message } from 'antd';
 import { createStyles } from 'antd-style';
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { flushSync } from 'react-dom';
 import Settings from '../../../../config/defaultSettings';
+import {listChartByPageUsingPost} from "@/services/yixinbi/chartController";
 const useStyles = createStyles(({ token }) => {
   return {
     action: {
@@ -89,6 +90,13 @@ const Login: React.FC = () => {
   const [type, setType] = useState<string>('account');
   const { initialState, setInitialState } = useModel('@@initialState');
   const { styles } = useStyles();
+
+  useEffect(() => {
+    listChartByPageUsingPost({}).then(res => {
+      console.error("res",res)
+    })
+  })
+
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {
