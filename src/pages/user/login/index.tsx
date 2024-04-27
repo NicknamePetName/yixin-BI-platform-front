@@ -153,8 +153,8 @@ const Login: React.FC = () => {
             maxWidth: '75vw',
           }}
           logo={<img alt="logo" src="/logo.svg" />}
-          title="Ant Design"
-          subTitle={'Ant Design 是西湖区最具影响力的 Web 设计规范'}
+          title="亦忻智能 BI 平台"
+          subTitle={'亦忻智能 BI 平台是自动生成可视化图表及分析结论，实现数据分析的降本增效的智能数据分析平台'}
           initialValues={{
             autoLogin: true,
           }}
@@ -190,7 +190,7 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <UserOutlined />,
                 }}
-                placeholder={'用户名: admin or user'}
+                placeholder={'用户名: '}
                 rules={[
                   {
                     required: true,
@@ -204,7 +204,7 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <LockOutlined />,
                 }}
-                placeholder={'密码: ant.design'}
+                placeholder={'密码: '}
                 rules={[
                   {
                     required: true,

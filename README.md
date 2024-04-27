@@ -2,7 +2,7 @@
 **基于 Spring Boot + MQ + AIGC（+ React）的智能数据分析平台。区别于传统 BI，用户只需要导入原始数据集、并输入分析诉求，就能自动生成可视化图表及分析结论，实现数据分析的降本增效。**
 # 前端
 1. React
-2. Umi + Ant Design Pro
+2. Umi + 亦忻智能 BI 平台
 3. 可视化开发库(Echarts + HighCharts + AntV)
 4. umi openapi代码生成(自动生成后端调用代码) 
 
