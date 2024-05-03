@@ -1,7 +1,7 @@
 import { getChartByAiUsingPost } from '@/services/yixinbi/chartController';
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, Form, Input, message, Select, Space, Upload } from 'antd';
-import TextArea from 'antd/es/input/TextArea';
+import { Button, Card, Form, Input, message, Select, Space, Spin, Upload } from 'antd';
+import TextArea from "antd/es/input/TextArea";
 import ReactECharts from 'echarts-for-react';
 import React, { useState } from 'react';
 
@@ -38,6 +38,7 @@ const AddChart: React.FC = () => {
         message.success('分析失败');
       } else {
         message.success('分析成功');
+        // const chartOption = JSON.parse(res.data.genChart ?? '');
         const chartOption = JSON.parse(res.data.genChart ?? '');
         if (!chartOption) {
           throw new Error('图表代码解析错误');
@@ -80,12 +81,12 @@ const AddChart: React.FC = () => {
         </Form.Item>
 
         <Form.Item name="file" label="原始数据">
-          <Upload name="file">
+          <Upload name="file" maxCount={1}>
             <Button icon={<UploadOutlined />}>上传CSV文件</Button>
           </Upload>
         </Form.Item>
 
-        <Form.Item wrapperCol={{ span: 12, offset: 6 }}>
+        <Form.Item wrapperCol={{ span: 12, offset: 10 }}>
           <Space>
             <Button type="primary" htmlType="submit" loading={submitting} disabled={submitting}>
               提交
@@ -95,13 +96,19 @@ const AddChart: React.FC = () => {
         </Form.Item>
       </Form>
       <div>
-        <strong>分析结论: </strong>
-        {chart?.genResult}
+        <Card title="分析结论：">
+          {chart?.genResult ?? <div>请先在上面进行数据提交</div>}
+          <Spin spinning={submitting}/>
+        </Card>
       </div>
       <p> </p>
       <div>
-        <strong>可视化图表: </strong>
-        {option && <ReactECharts option={option} />}
+        <Card title="可视化图表：">
+          {
+            option ? <ReactECharts option={option} /> : <div>请先在上面进行数据提交</div>
+          }
+          <Spin spinning={submitting}/>
+        </Card>
       </div>
     </div>
   );
