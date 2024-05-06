@@ -1,10 +1,10 @@
-import { getChartByAiUsingPost } from '@/services/yixinbi/chartController';
+import {getChartByAiAsyncUsingPost, getChartByAiUsingPost} from '@/services/yixinbi/chartController';
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Input, message, Select, Space, Spin, Upload } from 'antd';
-import TextArea from "antd/es/input/TextArea";
-import ReactECharts from 'echarts-for-react';
+import { Button, Form, Input, message, Select, Space, Upload } from 'antd';
+import { createStyles } from 'antd-style';
+import TextArea from 'antd/es/input/TextArea';
 import React, { useState } from 'react';
-import {createStyles} from "antd-style";
+import {useForm} from "antd/es/form/Form";
 
 const useStyles = createStyles(() => {
   return {
@@ -24,18 +24,15 @@ const useStyles = createStyles(() => {
   };
 });
 
-
-
 /**
  * 添加图表页面
  * @constructor
  */
 
 const { Option } = Select;
-const AddChart: React.FC = () => {
-  const [chart, setChart] = useState<API.AiResponseVO>();
+const AddChartAsync: React.FC = () => {
+  const [form, setForm] = useForm();
   const [submitting, setSubmitting] = useState(false);
-  const [option, setOption] = useState<any>();
   const { styles } = useStyles();
 
   /**
@@ -46,28 +43,20 @@ const AddChart: React.FC = () => {
     // 避免重复提交
     if (submitting) return;
     setSubmitting(true);
-    setChart(undefined);
-    setOption(undefined);
+
     // 对接后端，上传数据
     const params = {
       ...values,
       file: undefined,
     };
     try {
-      const res = await getChartByAiUsingPost(params, {}, values.file.file.originFileObj);
+      const res = await getChartByAiAsyncUsingPost(params, {}, values.file.file.originFileObj);
 
       if (!res?.data) {
         message.success('分析失败');
       } else {
-        message.success('分析成功');
-        // const chartOption = JSON.parse(res.data.genChart ?? '');
-        const chartOption = JSON.parse(res.data.genChart ?? '{}');
-        if (!chartOption) {
-          throw new Error('图表代码解析错误');
-        } else {
-          setChart(res.data);
-          setOption(chartOption);
-        }
+        message.success('分析任务提交成功，稍后请在我的图表页面查看');
+        form.resetFields();
       }
     } catch (e: any) {
       message.error('分析失败' + e.message);
@@ -76,9 +65,9 @@ const AddChart: React.FC = () => {
   };
 
   return (
-    <div className="add-chart">
+    <div className="add-chart-async">
       <div className={styles.container}></div>
-      <Form name="addChart" onFinish={onFinish} initialValues={{}}>
+      <Form form={form} name="addChart" onFinish={onFinish} initialValues={{}}>
         <Form.Item
           name="goal"
           label="分析目标"
@@ -118,22 +107,7 @@ const AddChart: React.FC = () => {
           </Space>
         </Form.Item>
       </Form>
-      <div>
-        <Card title="分析结论：">
-          {chart?.genResult ?? <div>请先在上面进行数据提交</div>}
-          <Spin spinning={submitting}/>
-        </Card>
-      </div>
-      <p> </p>
-      <div>
-        <Card title="可视化图表：">
-          {
-            option ? <ReactECharts option={option} /> : <div>请先在上面进行数据提交</div>
-          }
-          <Spin spinning={submitting}/>
-        </Card>
-      </div>
     </div>
   );
 };
-export default AddChart;
+export default AddChartAsync;
