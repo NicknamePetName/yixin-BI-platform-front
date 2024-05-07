@@ -43,6 +43,8 @@ const MyChartPage: React.FC = () => {
   const [chartList, setChartList] = useState<API.Chart[]>();
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [expandedConclusions, setExpandedConclusions] = useState<{ [key: string]: boolean }>({});
+
 
   const loadData = async () => {
     setLoading(true);
@@ -76,6 +78,7 @@ const MyChartPage: React.FC = () => {
     loadData();
   }, [searchParams.current, searchParams.pageSize]);
 
+  // @ts-ignore
   return (
     <div className="my-chart-page">
       <div className={styles.container}></div>
@@ -111,6 +114,8 @@ const MyChartPage: React.FC = () => {
               current: page,
               pageSize,
             });
+            // 在切换页面时重置展开状态
+            setExpandedConclusions({});
           },
           current: searchParams.current,
           pageSize: searchParams.pageSize,
@@ -128,24 +133,63 @@ const MyChartPage: React.FC = () => {
               }}
             >
               <List.Item.Meta
-                avatar={<Avatar src={currentUser && currentUser.userAvatar} />}
+                avatar={<Avatar src={currentUser && currentUser.userAvatar}/>}
                 title={item.name}
                 description={item.chartType ? '图表类型：' + item.chartType : undefined}
               />
-              <div style={{ marginBottom: 16 }} />
+              <div style={{marginBottom: 16}}/>
               <p>
-                <strong>分析目标: </strong>
+                <strong>分析目标:&nbsp;</strong>
                 {item.goal}
               </p>
-              <div style={{ marginBottom: 16 }} />
+              <div style={{marginBottom: 16}}/>
               <Card>
-                <ReactECharts option={item.genChart && JSON.parse(item.genChart)} />
+                <ReactECharts option={item.genChart && JSON.parse(item.genChart)}/>
               </Card>
               <p>
-                <br />
-                <strong>分析结论: </strong>
-                {item.genResult}
+                <br/>
+                {/* Truncate to two lines initially */}
+                <span
+                  style={{
+                    display: 'block',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    maxHeight: '2.4em',
+                    lineHeight: '1.2em',
+                  }}
+                >
+                  <strong
+                    onClick={() => {
+                      setExpandedConclusions(prevState => ({
+                        ...prevState,
+                        [item.id]: !prevState[item.id]
+                      }));
+                    }}
+                    style={{cursor: 'pointer'}}
+                  >
+                    分析结论:&nbsp;
+                  </strong>
+                  {item.genResult}
+                </span>
+                {/* Display full text if expanded */}
+                {expandedConclusions[item.id] ? item.genResult : null}
               </p>
+              {/* eslint-disable-next-line react/button-has-type */}
+              <button onClick={() => {
+                setExpandedConclusions(prevState => ({
+                  ...prevState,
+                  [item.id]: !prevState[item.id]
+                }));}}
+                style={{
+                  padding: '0 3px',
+                  margin: '0',
+                  backgroundImage: 'linear-gradient(to bottom left, #b3e5fc 0%, #90caf9 50%, #673ab7 100%)',
+                  border: 'solid 1px',
+                  cursor: 'pointer'
+              }}>
+                {expandedConclusions[item.id] ? '收起结论' : '展开结论'}
+              </button>
             </Card>
           </List.Item>
         )}
