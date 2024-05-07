@@ -1,6 +1,6 @@
 import { listMyChartByPageUsingPost } from '@/services/yixinbi/chartController';
 import { useModel } from '@@/exports';
-import { Avatar, Card, List, message } from 'antd';
+import { Avatar, Card, List, Result, message } from 'antd';
 import { createStyles } from 'antd-style';
 import Search from 'antd/es/input/Search';
 import ReactECharts from 'echarts-for-react';
@@ -44,7 +44,6 @@ const MyChartPage: React.FC = () => {
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedConclusions, setExpandedConclusions] = useState<{ [key: string]: boolean }>({});
-
 
   const loadData = async () => {
     setLoading(true);
@@ -133,63 +132,153 @@ const MyChartPage: React.FC = () => {
               }}
             >
               <List.Item.Meta
-                avatar={<Avatar src={currentUser && currentUser.userAvatar}/>}
+                avatar={<Avatar src={currentUser && currentUser.userAvatar} />}
                 title={item.name}
                 description={item.chartType ? '图表类型：' + item.chartType : undefined}
               />
-              <div style={{marginBottom: 16}}/>
+              <div style={{ marginBottom: 16 }} />
               <p>
                 <strong>分析目标:&nbsp;</strong>
                 {item.goal}
               </p>
-              <div style={{marginBottom: 16}}/>
-              <Card>
-                <ReactECharts option={item.genChart && JSON.parse(item.genChart)}/>
-              </Card>
-              <p>
-                <br/>
-                {/* Truncate to two lines initially */}
-                <span
-                  style={{
-                    display: 'block',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxHeight: '2.4em',
-                    lineHeight: '1.2em',
-                  }}
-                >
-                  <strong
-                    onClick={() => {
-                      setExpandedConclusions(prevState => ({
-                        ...prevState,
-                        [item.id]: !prevState[item.id]
-                      }));
-                    }}
-                    style={{cursor: 'pointer'}}
-                  >
-                    分析结论:&nbsp;
-                  </strong>
-                  {item.genResult}
-                </span>
-                {/* Display full text if expanded */}
-                {expandedConclusions[item.id] ? item.genResult : null}
-              </p>
-              {/* eslint-disable-next-line react/button-has-type */}
-              <button onClick={() => {
-                setExpandedConclusions(prevState => ({
-                  ...prevState,
-                  [item.id]: !prevState[item.id]
-                }));}}
-                style={{
-                  padding: '0 3px',
-                  margin: '0',
-                  backgroundImage: 'linear-gradient(to bottom left, #b3e5fc 0%, #90caf9 50%, #673ab7 100%)',
-                  border: 'solid 1px',
-                  cursor: 'pointer'
-              }}>
-                {expandedConclusions[item.id] ? '收起结论' : '展开结论'}
-              </button>
+              <div style={{ marginBottom: 16 }} />
+              <>
+                {item.status === 'wait' && (
+                  <>
+                    {/* eslint-disable-next-line react/jsx-no-undef */}
+                    <Result
+                      status="warning"
+                      title="等待资源中"
+                      subTitle={item.execMessage ?? '当前生成队列繁忙，请耐心等候'}
+                      style={{ height: '402.468px' }}
+                    />
+                    {/* eslint-disable-next-line react/button-has-type */}
+                    <button
+                      onClick={loadData}
+                      style={{
+                        float: 'right',
+                        padding: '0 3px',
+                        margin: '0',
+                        backgroundImage:
+                          'linear-gradient(to bottom left, #b3e5fc 0%, #90caf9 50%, #673ab7 100%)',
+                        border: 'solid 1px',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      刷新
+                    </button>
+                  </>
+                )}
+                {item.status === 'running' && (
+                  <>
+                    <Result
+                      status="info"
+                      title="内容生成中"
+                      subTitle={item.execMessage}
+                      style={{ height: '402.468px' }}
+                    />
+                    {/* eslint-disable-next-line react/button-has-type */}
+                    <button
+                      onClick={loadData}
+                      style={{
+                        float: 'right',
+                        padding: '0 3px',
+                        margin: '0',
+                        backgroundImage:
+                          'linear-gradient(to bottom left, #b3e5fc 0%, #90caf9 50%, #673ab7 100%)',
+                        border: 'solid 1px',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      刷新
+                    </button>
+                  </>
+                )}
+                {item.status === 'succeed' && (
+                  <>
+                    <Card>
+                      <ReactECharts option={item.genChart && JSON.parse(item.genChart)} />
+                    </Card>
+                    <p>
+                      <br />
+                      {/* Truncate to two lines initially */}
+                      <span
+                        style={{
+                          display: 'block',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxHeight: '2.4em',
+                          lineHeight: '1.2em',
+                        }}
+                      >
+                        <strong
+                          onClick={() => {
+                            setExpandedConclusions((prevState) => ({
+                              ...prevState,
+                              [item.id]: !prevState[item.id],
+                            }));
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          分析结论:&nbsp;
+                        </strong>
+                        {item.genResult}
+                      </span>
+                      {/* Display full text if expanded */}
+                      {expandedConclusions[item.id] ? item.genResult : null}
+                    </p>
+                    {/* eslint-disable-next-line react/button-has-type */}
+                    <button
+                      onClick={() => {
+                        setExpandedConclusions((prevState) => ({
+                          ...prevState,
+                          [item.id]: !prevState[item.id],
+                        }));
+                      }}
+                      style={{
+                        padding: '0 3px',
+                        margin: '0',
+                        backgroundImage:
+                          'linear-gradient(to bottom left, #b3e5fc 0%, #90caf9 50%, #673ab7 100%)',
+                        border: 'solid 1px',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {expandedConclusions[item.id] ? '收起结论' : '展开结论'}
+                    </button>
+                  </>
+                )}
+                {item.status === 'failed' && (
+                  <>
+                    <Result
+                      status="error"
+                      title="生成失败"
+                      subTitle={item.execMessage}
+                      style={{ height: '402.468px' }}
+                    />
+                    {/* eslint-disable-next-line react/button-has-type */}
+                    <button
+                      onClick={loadData}
+                      style={{
+                        float: 'right',
+                        padding: '0 3px',
+                        margin: '0',
+                        backgroundImage:
+                          'linear-gradient(to bottom left, #b3e5fc 0%, #90caf9 50%, #673ab7 100%)',
+                        border: 'solid 1px',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      重新生成
+                    </button>
+                  </>
+                )}
+              </>
             </Card>
           </List.Item>
         )}
