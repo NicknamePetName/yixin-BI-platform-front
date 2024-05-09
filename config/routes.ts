@@ -11,11 +11,18 @@ export default [
     name: '智能分析',
     icon: 'barChart',
     component: './AddChart',
-  },{
+  },
+  {
     path: '/add_chart_async',
     name: '智能分析-异步',
     icon: 'barChart',
     component: './AddChartAsync',
+  },
+  {
+    path: '/add_chart_async_mq',
+    name: '智能分析-MQ',
+    icon: 'barChart',
+    component: './AddChartAsyncMq',
   },
   {
     path: '/my_chart',
