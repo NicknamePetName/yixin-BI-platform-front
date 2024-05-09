@@ -16,8 +16,8 @@ const Footer: React.FC = () => {
       links={[
         {
           key: '亦忻智能 BI 平台',
-          title: '亦忻智能 BI 平台',
-          href: '项目地址',
+          title: '前端 — 亦忻智能 BI 平台',
+          href: 'https://github.com/NicknamePetName/yixin-BI-platform-front',
           blankTarget: true,
         },
         {
@@ -28,8 +28,8 @@ const Footer: React.FC = () => {
         },
         {
           key: '亦忻智能 BI 平台',
-          title: '亦忻智能 BI 平台',
-          href: '项目地址',
+          title: '亦忻智能 BI 平台 — 后端',
+          href: 'https://github.com/NicknamePetName/yixin-BI-platform',
           blankTarget: true,
         },
       ]}
