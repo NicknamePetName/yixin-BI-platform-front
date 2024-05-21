@@ -1,20 +1,23 @@
 import { Footer } from '@/components';
-import { listChartByPageUsingPost } from '@/services/yixinbi/chartController';
-import { getLoginUserUsingGet, userLoginUsingPost } from '@/services/yixinbi/userController';
+import {userLoginUsingPost, userRegisterUsingPost} from '@/services/yixinbi/userController';
 import {
   AlipayCircleOutlined,
   LockOutlined,
   MobileOutlined,
   TaobaoCircleOutlined,
   UserOutlined,
-  WeiboCircleOutlined
+  WeiboCircleOutlined,
 } from '@ant-design/icons';
-import { LoginForm, ProFormText, ProFormCheckbox, ProFormCaptcha } from '@ant-design/pro-components';
-import { Helmet, Link, history, useModel } from '@umijs/max';
+import {
+  LoginForm,
+  ProFormCaptcha,
+  ProFormCheckbox,
+  ProFormText,
+} from '@ant-design/pro-components';
+import { Helmet, Link, history } from '@umijs/max';
 import { Tabs, message } from 'antd';
 import { createStyles } from 'antd-style';
-import React, { useEffect, useState } from 'react';
-import { flushSync } from 'react-dom';
+import React, { useState } from 'react';
 import Settings from '../../../../config/defaultSettings';
 
 const useStyles = createStyles(({ token }) => {
@@ -52,62 +55,39 @@ const useStyles = createStyles(({ token }) => {
     },
   };
 });
-const ActionIcons = () => {
-  const { styles } = useStyles();
-  return (
-    <>
-      <AlipayCircleOutlined key="AlipayCircleOutlined" className={styles.action} />
-      <TaobaoCircleOutlined key="TaobaoCircleOutlined" className={styles.action} />
-      <WeiboCircleOutlined key="WeiboCircleOutlined" className={styles.action} />
-    </>
-  );
-};
 
-const Login: React.FC = () => {
+
+
+const Register: React.FC = () => {
   const [type, setType] = useState<string>('account');
-  const { initialState, setInitialState } = useModel('@@initialState');
   const { styles } = useStyles();
   const [formKey, setFormKey] = useState(0); // 状态用于强制重新渲染表单组件
+  
+  // 表单提交
+  const handleSubmit = async (values: API.UserRegisterRequest) => {
 
-  useEffect(() => {
-    listChartByPageUsingPost({}).then((res) => {
-      console.error('res', res);
-    });
-  });
-
-  /**
-   * 登录成功后获取用户信息
-   */
-  const fetchUserInfo = async () => {
-    const userInfo = await getLoginUserUsingGet();
-    if (userInfo) {
-      flushSync(() => {
-
-        setInitialState((s) => ({
-          ...s,
-          currentUser: userInfo,
-        }));
-      });
+    const {userPassword, checkPassword} = values;
+    if (userPassword !== checkPassword) {
+      message.error("两次输入的密码不一致");
+      return;
     }
-  };
-  const handleSubmit = async (values: API.UserLoginRequest) => {
+
     try {
-      // 登录
-      const res = await userLoginUsingPost(values);
-      if (res.code === 0) {
-        message.success('登录成功！');
-        await fetchUserInfo();
+      // 注册
+      const res = await userRegisterUsingPost(values);
+      if (res.data) {
+        message.success('注册成功！');
         const urlParams = new URL(window.location.href).searchParams;
-        history.push(urlParams.get('redirect') || '/');
+        history.push(urlParams.get('redirect') || '/user/login');
         return;
       } else {
         setFormKey(prevKey => prevKey + 1);
-        message.error(res.message);
+        message.error('注册失败:' + res.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       setFormKey(prevKey => prevKey + 1);
       console.log(error);
-      message.error('登录失败，请重试！');
+      message.error('注册失败，请重试！');
     }
   };
   // const { status, type: loginType } = userLoginState;
@@ -115,7 +95,7 @@ const Login: React.FC = () => {
     <div className={styles.container}>
       <Helmet>
         <title>
-          {'登录'}- {Settings.title}
+          {'注册'}- {Settings.title}
         </title>
       </Helmet>
 
@@ -127,22 +107,26 @@ const Login: React.FC = () => {
         }}
       >
         <LoginForm
+          submitter={{
+            searchConfig: {
+              submitText: '注册'
+            }
+          }}
           contentStyle={{
             minWidth: 280,
             maxWidth: '75vw',
           }}
-          logo={<img alt="logo" src="/logo.svg"/>}
-          title="欢迎登录 亦忻智能 BI 平台"
+          logo={<img alt="logo" src="/register.svg" />}
+          title="欢迎注册 亦忻 智能 BI 平台"
           subTitle={
-            '亦忻智能 BI 平台是自动生成可视化图表及分析结论，实现数据分析的降本增效的智能数据分析平台'
+            <a href="https://github.com/NicknamePetName" target="_blank" rel="noopener noreferrer" style={{textDecoration: 'none', color:'#1677ff'}}>亦忻智能 BI 平台是自动生成可视化图表及分析结论，实现数据分析的降本增效的智能数据分析平台</a>
           }
           initialValues={{
             autoLogin: true,
           }}
           key={formKey}
-          actions={['其他登录方式 :', <ActionIcons key="icons"/>]}
           onFinish={async (values) => {
-            await handleSubmit(values as API.UserLoginRequest);
+            await handleSubmit(values as API.UserRegisterRequest);
           }}
         >
           <div
@@ -160,9 +144,7 @@ const Login: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            <Link to="/user/register">
-              注册
-            </Link>
+            <Link to="/user/login">登录</Link>
           </div>
           <Tabs
             activeKey={type}
@@ -171,31 +153,28 @@ const Login: React.FC = () => {
             items={[
               {
                 key: 'account',
-                label: '账户密码登录',
+                label: '账户密码注册',
               },
               {
                 key: 'mobile',
-                label: '手机号登录',
+                label: '手机号注册',
               },
             ]}
           />
 
-          {/*{status === 'error' && loginType === 'account' && (*/}
-          {/*  <LoginMessage content={'错误的用户名和密码(admin/ant.design)'} />*/}
-          {/*)}*/}
           {type === 'account' && (
             <>
               <ProFormText
                 name="userAccount"
                 fieldProps={{
                   size: 'large',
-                  prefix: <UserOutlined/>,
+                  prefix: <UserOutlined />,
                 }}
                 placeholder={'请输入用户名: '}
                 rules={[
                   {
                     required: true,
-                    message: '用户名是必填项！',
+                    message: '用户名不能为空！',
                   },
                   {
                     min: 4,
@@ -208,13 +187,32 @@ const Login: React.FC = () => {
                 name="userPassword"
                 fieldProps={{
                   size: 'large',
-                  prefix: <LockOutlined/>,
+                  prefix: <LockOutlined />,
                 }}
                 placeholder={'请输入密码: '}
                 rules={[
                   {
                     required: true,
-                    message: '密码是必填项！',
+                    message: '密码不能为空！',
+                  },
+                  {
+                    min: 8,
+                    type: 'string',
+                    message: '长度不能小于 8',
+                  },
+                ]}
+              />
+              <ProFormText.Password
+                name="checkPassword"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <LockOutlined />,
+                }}
+                placeholder={'请再次输入密码: '}
+                rules={[
+                  {
+                    required: true,
+                    message: '密码不能为空！',
                   },
                   {
                     min: 8,
@@ -231,14 +229,14 @@ const Login: React.FC = () => {
               <ProFormText
                 fieldProps={{
                   size: 'large',
-                  prefix: <MobileOutlined/>,
+                  prefix: <MobileOutlined />,
                 }}
                 name="mobile"
                 placeholder={'请输入手机号！'}
                 rules={[
                   {
                     required: true,
-                    message: '手机号是必填项！',
+                    message: '手机号不能为空！',
                   },
                   {
                     pattern: /^1\d{10}$/,
@@ -246,10 +244,29 @@ const Login: React.FC = () => {
                   },
                 ]}
               />
+              <ProFormText.Password
+                name="userPassword"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <LockOutlined />,
+                }}
+                placeholder={'请输入密码: '}
+                rules={[
+                  {
+                    required: true,
+                    message: '密码不能为空！',
+                  },
+                  {
+                    min: 8,
+                    type: 'string',
+                    message: '长度不能小于 8',
+                  },
+                ]}
+              />
               <ProFormCaptcha
                 fieldProps={{
                   size: 'large',
-                  prefix: <LockOutlined/>,
+                  prefix: <LockOutlined />,
                 }}
                 captchaProps={{
                   size: 'large',
@@ -265,7 +282,7 @@ const Login: React.FC = () => {
                 rules={[
                   {
                     required: true,
-                    message: '验证码是必填项！',
+                    message: '验证码不能为空！',
                   },
                 ]}
                 onGetCaptcha={async (phone) => {
@@ -298,8 +315,8 @@ const Login: React.FC = () => {
           </div>
         </LoginForm>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 };
-export default Login;
+export default Register;

@@ -45,8 +45,22 @@ const MyChartPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedConclusions, setExpandedConclusions] = useState<{ [key: string]: boolean }>({});
 
+  // 判断 ECharts option对象代码是否解析成功
+  const isParseJSON = (item) => {
+    try {
+      JSON.parse(item.genChart);
+      return true; // 解析成功
+    } catch (e) {
+      item.status = 'failed';
+      return false; // 解析失败
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
+    if (!Boolean(currentUser)) {
+      return;
+    }
     try {
       const res = await listMyChartByPageUsingPost(searchParams);
       if (res.data) {
@@ -77,6 +91,8 @@ const MyChartPage: React.FC = () => {
     loadData();
   }, [searchParams.current, searchParams.pageSize]);
 
+  // @ts-ignore
+  // @ts-ignore
   // @ts-ignore
   return (
     <div className="my-chart-page">
@@ -196,10 +212,10 @@ const MyChartPage: React.FC = () => {
                     </button>
                   </>
                 )}
-                {item.status === 'succeed' && (
+                {item.status === 'succeed' && isParseJSON(item) && (
                   <>
                     <Card>
-                      <ReactECharts option={item.genChart && JSON.parse(item.genChart)} />
+                      <ReactECharts option={JSON.parse(item.genChart)} />
                     </Card>
                     <p>
                       <br />
